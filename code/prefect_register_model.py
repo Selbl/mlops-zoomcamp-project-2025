@@ -15,25 +15,26 @@ from sklearn.metrics import accuracy_score, f1_score, classification_report
 from mlflow.entities import ViewType
 from mlflow.tracking import MlflowClient
 
-from prefect import flow,task
-from sklearn.model_selection import train_test_split
+from prefect import flow, task
+
+# from sklearn.model_selection import train_test_split
 
 import subprocess
 
-TARGET_COL        = "GradeClass"
-HPO_EXPERIMENT    = "gradeclass-xgb-hpo"      # must match the HPO script
-FINAL_EXPERIMENT  = "gradeclass-xgb-final"
-MODEL_NAME        = "gradeclass-xgb-classifier"
+TARGET_COL = "GradeClass"
+HPO_EXPERIMENT = "gradeclass-xgb-hpo"  # must match the HPO script
+FINAL_EXPERIMENT = "gradeclass-xgb-final"
+MODEL_NAME = "gradeclass-xgb-classifier"
 
-@task(name='Connect-server')
+
+@task(name="Connect-server")
 def connect_prefect(url="http://127.0.0.1:4200/api"):
     # Config prefect
     # Define the command as a list of arguments
-    command = [
-        "prefect", "config", "set", f"PREFECT_API_URL={url}"
-    ]
+    command = ["prefect", "config", "set", f"PREFECT_API_URL={url}"]
     # Run the command
     subprocess.run(command, capture_output=True, text=True)
+
 
 @task(name="Read_csv")
 def read_csv_as_xy(path: str):
@@ -43,6 +44,7 @@ def read_csv_as_xy(path: str):
     )
     y = df[TARGET_COL].astype(int)
     return X, y
+
 
 @task(name="cast-parameters")
 def cast_params(params: dict):
@@ -75,17 +77,20 @@ def cast_params(params: dict):
 
 
 @click.command()
-@click.option("--data-path", default="../data/processed",
-              help="Folder with train.csv, val.csv, test.csv")
-@click.option("--model_name", default=MODEL_NAME,
-              help="Name inside MLflow Model Registry")
-
-@flow(name='register-model',log_prints=True)
+@click.option(
+    "--data-path",
+    default="../data/processed",
+    help="Folder with train.csv, val.csv, test.csv",
+)
+@click.option(
+    "--model_name", default=MODEL_NAME, help="Name inside MLflow Model Registry"
+)
+@flow(name="register-model", log_prints=True)
 def main(data_path: str, model_name: str):
     # --------------------------------------------------------
     # 1. locate best HPO run (highest val_f1_macro)
     # --------------------------------------------------------
-    mlflow.set_tracking_uri("http://127.0.0.1:5000")    # adjust if needed
+    mlflow.set_tracking_uri("http://127.0.0.1:5000")  # adjust if needed
     client = MlflowClient()
 
     exp_id = client.get_experiment_by_name(HPO_EXPERIMENT).experiment_id
@@ -93,32 +98,33 @@ def main(data_path: str, model_name: str):
         experiment_ids=[exp_id],
         run_view_type=ViewType.ACTIVE_ONLY,
         max_results=1,
-        order_by=["metrics.val_f1_macro DESC"]
+        order_by=["metrics.val_f1_macro DESC"],
     )[0]
 
     best_params = cast_params(best_run.data.params)
-    best_f1     = best_run.data.metrics["val_f1_macro"]
-    print(f"🔎  Best HPO run {best_run.info.run_id}  "
-          f"val_macro_F1={best_f1:.4f}")
+    best_f1 = best_run.data.metrics["val_f1_macro"]
+    print(f"🔎  Best HPO run {best_run.info.run_id}  " f"val_macro_F1={best_f1:.4f}")
 
     # --------------------------------------------------------
     # 2. load data & retrain on (train + val)
     # --------------------------------------------------------
     X_train, y_train = read_csv_as_xy(os.path.join(data_path, "train.csv"))
-    X_val,   y_val   = read_csv_as_xy(os.path.join(data_path, "val.csv"))
-    X_test,  y_test  = read_csv_as_xy(os.path.join(data_path, "test.csv"))
+    X_val, y_val = read_csv_as_xy(os.path.join(data_path, "val.csv"))
+    X_test, y_test = read_csv_as_xy(os.path.join(data_path, "test.csv"))
 
     X_trval = pd.concat([X_train, X_val], axis=0)
     y_trval = pd.concat([y_train, y_val], axis=0)
     num_classes = len(np.unique(y_trval))
 
-    best_params.update({
-        "objective":   "multi:softprob",
-        "eval_metric": "mlogloss",
-        "num_class":   num_classes,
-        "n_jobs":      -1,
-        "random_state": 42,
-    })
+    best_params.update(
+        {
+            "objective": "multi:softprob",
+            "eval_metric": "mlogloss",
+            "num_class": num_classes,
+            "n_jobs": -1,
+            "random_state": 42,
+        }
+    )
 
     mlflow.set_experiment(FINAL_EXPERIMENT)
     mlflow.xgboost.autolog()
@@ -128,14 +134,14 @@ def main(data_path: str, model_name: str):
         model.fit(X_trval, y_trval)
 
         preds = model.predict(X_test)
-        acc   = accuracy_score(y_test, preds)
-        f1    = f1_score(y_test, preds, average="macro")
+        acc = accuracy_score(y_test, preds)
+        f1 = f1_score(y_test, preds, average="macro")
 
         mlflow.log_metric("test_accuracy", acc)
         mlflow.log_metric("test_f1_macro", f1)
         mlflow.log_dict(
             classification_report(y_test, preds, output_dict=True),
-            "classification_report.json"
+            "classification_report.json",
         )
 
         # register

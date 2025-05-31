@@ -15,6 +15,10 @@ requests = "*"
 scikit-learn = "*"
 xgboost = "*"
 gunicorn = "*"
+black = "*"
+flake8 = "*"
+pre-commit = "*"
+pytest = "*"
 
 [dev-packages]
 

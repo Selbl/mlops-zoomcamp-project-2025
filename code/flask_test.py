@@ -11,10 +11,9 @@ student = {
     "Sports": 0,
     "Music": 1,
     "Volunteering": 0,
-    "StudentID": 123
+    "StudentID": 123,
 }
 
 resp = requests.post("http://localhost:9696/predict", json=student)
 print(f'Result for Student ID: {student["StudentID"]}')
 print(resp.json())
-
