@@ -1,5 +1,6 @@
 import argparse
-from distutils.util import strtobool
+
+# from distutils.util import strtobool
 import pandas as pd
 
 # import numpy as np
@@ -9,6 +10,14 @@ from prefect import flow, task
 from sklearn.model_selection import train_test_split
 
 import subprocess
+
+
+def strtobool(s):
+    if s in ["True", "true", "TRUE"]:
+        return True
+    elif s in ["False", "false", "FALSE"]:
+        return False
+    raise ValueError("Invalid string boolean value")
 
 
 @task(name="Parser")
@@ -28,7 +37,7 @@ def parse_args():
     parser.add_argument(
         "--save-raw",
         dest="save_raw",
-        type=lambda x: bool(strtobool(x)),
+        type=lambda x: strtobool(x),
         default=False,
         help="Whether to save raw train/val/test CSVs (True or False). Default is True.",
     )
