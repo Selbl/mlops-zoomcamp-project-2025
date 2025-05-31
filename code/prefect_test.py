@@ -182,7 +182,7 @@ def main():
     # Pre-process
     df = one_hot_encoding(df)
     # Connect to MLFlow
-    mlflow.set_tracking_uri("http://127.0.0.1:5000")  # adjust if necessary
+    mlflow.set_tracking_uri("http://127.0.0.1:5001")  # adjust if necessary
     # Retrieve model
     model_uri = get_model_uri("gradeclass-xgb-classifier", "Staging")
     model = mlflow.pyfunc.load_model(model_uri)
