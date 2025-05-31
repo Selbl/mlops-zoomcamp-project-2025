@@ -1,0 +1,11 @@
+click
+flask
+matplotlib
+mlflow
+numpy
+pandas
+prefect
+requests
+scikit-learn
+xgboost
+gunicorn

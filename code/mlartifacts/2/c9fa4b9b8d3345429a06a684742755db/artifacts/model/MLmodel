@@ -1,0 +1,51 @@
+artifact_path: model
+flavors:
+  python_function:
+    data: model.xgb
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.xgboost
+    python_version: 3.12.9
+  xgboost:
+    code: null
+    data: model.xgb
+    model_class: xgboost.sklearn.XGBClassifier
+    model_format: xgb
+    xgb_version: 3.0.1
+is_signature_from_type_hint: false
+mlflow_version: 2.22.0
+model_size_bytes: 1892251
+model_uuid: 0111a19eb33a418c8727642dfd58b121
+prompts: null
+run_id: c9fa4b9b8d3345429a06a684742755db
+signature:
+  inputs: '[{"type": "double", "name": "StudyTimeWeekly", "required": true}, {"type":
+    "long", "name": "Absences", "required": true}, {"type": "long", "name": "Age_15",
+    "required": true}, {"type": "long", "name": "Age_16", "required": true}, {"type":
+    "long", "name": "Age_17", "required": true}, {"type": "long", "name": "Age_18",
+    "required": true}, {"type": "long", "name": "Gender_Female", "required": true},
+    {"type": "long", "name": "Gender_Male", "required": true}, {"type": "long", "name":
+    "Ethnicity_African American", "required": true}, {"type": "long", "name": "Ethnicity_Asian",
+    "required": true}, {"type": "long", "name": "Ethnicity_Caucasian", "required":
+    true}, {"type": "long", "name": "Ethnicity_Other", "required": true}, {"type":
+    "long", "name": "ParentalEducation_Bachelor''s", "required": true}, {"type": "long",
+    "name": "ParentalEducation_High School", "required": true}, {"type": "long", "name":
+    "ParentalEducation_Higher", "required": true}, {"type": "long", "name": "ParentalEducation_None",
+    "required": true}, {"type": "long", "name": "ParentalEducation_Some College",
+    "required": true}, {"type": "long", "name": "Tutoring_No", "required": true},
+    {"type": "long", "name": "Tutoring_Yes", "required": true}, {"type": "long", "name":
+    "ParentalSupport_High", "required": true}, {"type": "long", "name": "ParentalSupport_Low",
+    "required": true}, {"type": "long", "name": "ParentalSupport_Moderate", "required":
+    true}, {"type": "long", "name": "ParentalSupport_None", "required": true}, {"type":
+    "long", "name": "ParentalSupport_Very High", "required": true}, {"type": "long",
+    "name": "Extracurricular_No", "required": true}, {"type": "long", "name": "Extracurricular_Yes",
+    "required": true}, {"type": "long", "name": "Sports_No", "required": true}, {"type":
+    "long", "name": "Sports_Yes", "required": true}, {"type": "long", "name": "Music_No",
+    "required": true}, {"type": "long", "name": "Music_Yes", "required": true}, {"type":
+    "long", "name": "Volunteering_No", "required": true}, {"type": "long", "name":
+    "Volunteering_Yes", "required": true}]'
+  outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "int64", "shape": [-1]}}]'
+  params: null
+type_hint_from_example: false
+utc_time_created: '2025-05-29 22:37:21.202172'

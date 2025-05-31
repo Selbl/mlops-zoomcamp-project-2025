@@ -172,3 +172,13 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# ── MLflow artefacts ─────────────────────────────────────────────
+# Ignore EVERYTHING inside code/mlartifacts/ …
+code/mlartifacts/*
+
+# …but keep the final run folder and the MLflow database
+!code/mlartifacts/2/
+!code/mlartifacts/2/**
+!code/mlartifacts/mlflow.db
+
