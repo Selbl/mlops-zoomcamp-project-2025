@@ -1,43 +1,59 @@
-# ──────────────────────────────────────────────────────────────────────────────
-# Dockerfile — Grade‑Class service  (Flask + MLflow server in one container)
-# Build:  docker build -t gradeclass-service .
-# Run :  docker run -p 9696:9696 -p 5000:5000 gradeclass-service
-#        (5000 is optional but handy if you want to open the MLflow UI)
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------
+# Base image
+# ------------------------------------------------------------
 FROM python:3.12-slim
 
-# ---- system libs for xgboost -------------------------------------------------
+# ------------------------------------------------------------
+# System setup: update apt and install any build deps you need
+# (none required for this project, but leaving pattern)
+# ------------------------------------------------------------
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential libgomp1 \
-    && rm -rf /var/lib/apt/lists/*
+    git build-essential && \
+    rm -rf /var/lib/apt/lists/*
 
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
-
-RUN pip install --upgrade pip pipenv
+# ------------------------------------------------------------
+# Python deps: pip↑, pipenv, then project + dev tools
+# ------------------------------------------------------------
+RUN pip install --upgrade pip
+RUN pip install pipenv
 
 WORKDIR /app
 
-# ---- dependency layer --------------------------------------------------------
+# Copy Pipenv files first so Docker can cache layer
 COPY Pipfile Pipfile.lock ./
-RUN pipenv install --system --deploy --ignore-pipfile
+RUN pipenv install --system --deploy
 
-# ---- copy code (includes mlartifacts nested inside) --------------------------
-COPY code/ code/
+# ------------------------------------------------------------
+# Copy project source
+# ------------------------------------------------------------
+COPY . .
 
-# ---- environment vars MLflow will use ----------------------------------------
-ENV MLFLOW_ARTIFACT_ROOT=file:///app/code/mlartifacts         
-ENV MLFLOW_BACKEND_URI=sqlite:////tmp/mlflow.db
-ENV MLFLOW_TRACKING_URI=http://0.0.0.0:5000
-# ---- expose ports ------------------------------------------------------------
-EXPOSE 9696 5000   
+# ------------------------------------------------------------
+# Environment variables for MLflow
+# (the actual paths are overridden at `docker run` via -e or -v)
+# ------------------------------------------------------------
+ENV MLFLOW_BACKEND_URI=sqlite:////app/code/mlflow.db
+ENV MLFLOW_ARTIFACT_ROOT=file:///app/code/mlartifacts
 
-# ---- run both services in one shot ------------------------------------------
-# • shell form `/bin/sh -c "cmd1 & cmd2"` lets us background MLflow (cmd1)
-# • `exec` Gunicorn in the foreground so container stops when it stops
+# ------------------------------------------------------------
+# Ports: 9696 (Flask API), 5000 (MLflow UI), 4200 (Prefect UI)
+# ------------------------------------------------------------
+EXPOSE 9696
+EXPOSE 5000
+EXPOSE 4200
+
+# ------------------------------------------------------------
+# Entrypoint:
+#   1. Prefect server (port 4200)
+#   2. MLflow tracking server (port 5000)
+#   3. Gunicorn Flask API (port 9696)  ← keeps container foreground
+# ------------------------------------------------------------
 CMD /bin/sh -c "\
-      mlflow server \
-        --backend-store-uri ${MLFLOW_BACKEND_URI} \
-        --default-artifact-root ${MLFLOW_ARTIFACT_ROOT} \
-        --artifacts-destination ${MLFLOW_ARTIFACT_ROOT} \
-        --host 0.0.0.0 --port 5000 & \
-      exec gunicorn --chdir code --bind 0.0.0.0:9696 flask_predict:app"
+  prefect server start --host 0.0.0.0 & \
+  mlflow server \
+      --backend-store-uri ${MLFLOW_BACKEND_URI} \
+      --default-artifact-root ${MLFLOW_ARTIFACT_ROOT} \
+      --artifacts-destination ${MLFLOW_ARTIFACT_ROOT} \
+      --host 0.0.0.0 --port 5000 & \
+  exec gunicorn --chdir code --bind 0.0.0.0:9696 flask_predict:app \
+"
