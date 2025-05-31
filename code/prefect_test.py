@@ -13,6 +13,8 @@ import pandas as pd
 
 from mlflow.tracking import MlflowClient
 
+# from mlflow.exceptions import MlflowException
+
 # from mlflow.models.signature import ModelSignature
 
 # add this at the very top with the other imports
@@ -182,7 +184,10 @@ def main():
     # Pre-process
     df = one_hot_encoding(df)
     # Connect to MLFlow
-    mlflow.set_tracking_uri("http://127.0.0.1:5001")  # adjust if necessary
+    try:
+        mlflow.set_tracking_uri("http://127.0.0.1:5001")
+    except mlflow.exceptions.MlflowException:
+        mlflow.set_tracking_uri("http://127.0.0.1:5000")
     # Retrieve model
     model_uri = get_model_uri("gradeclass-xgb-classifier", "Staging")
     model = mlflow.pyfunc.load_model(model_uri)
