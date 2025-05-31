@@ -1,2 +1,151 @@
-# mlops-zoomcamp-project-2025
-Repo for my project for the 2025 version of MLOPS Zoomcamp by DataTalksClub
+# Student Performance ML Pipeline
+
+**Capstone Project — MLOps Zoomcamp 2025**
+
+This project is an end-to-end ML workflow that predicts a student's final grade class (A–F) using demographic and academic performance data. It uses XGBoost as the classifier, and Prefect + MLflow for orchestration and experiment tracking.
+
+---
+
+## Project Structure
+
+```
+mlops-zoomcamp-project-25/
+│
+├── code/                       ← all source code & pipelines
+│   ├── prefect_process_data.py
+│   ├── prefect_train_xgb.py
+│   ├── prefect_register_model.py
+│   ├── prefect_test.py
+│   ├── flask_predict.py
+│   ├── flask_test.py
+│   ├── prefect_orchestrate_pipeline.py
+│   ├── mlflow.db                        ← tracked
+│   └── mlartifacts/
+│       └── 2/ …                         ← tracked
+│
+├── data/                       ← all data
+│   ├── students_performance.csv        ← original data source
+│   └── processed/, raw/                 # created dynamically
+│
+├── Dockerfile
+├── Pipfile / Pipfile.lock
+└── .gitignore
+```
+
+This repository only has the final run artifacts in `code/mlartifacts/2` and `mlflow.db`. I omit the rest because of space constraints.
+
+I did mess up some of the configuration because I use the mlflow.db database from within the code folder. My instructions try to specify on which folder you should be at all times.
+
+---
+
+## Data
+
+I use the [Student Performance Dataset from Kaggle](https://www.kaggle.com/datasets/rabieelkharoua/students-performance-dataset). This rich dataset has information on high school students demographics (age, ethnicity) and academic performance (absences, extracurriculars) as well as their final grade.
+
+I decided to go with a relatively simple and clean dataset in order to fully focus on the deployment part of the process. I use XGBoost as my predictive model in order to leverage the power of gradient boosted decision trees on a relatively small sample. This allows me to achieve high performance while having a relatively low training cost.
+
+---
+
+## Quickstart (Local)
+
+
+### Install dependencies
+
+From within the main folder (mlops-zoomcamp-project-25)
+
+```bash
+pip install pipenv
+pipenv shell
+```
+
+With this you have the necessary environment to run the code. Below, I describe how to run the whole end-to-end process which includes training and model registry (Option A). Alternatively, you can run the Docker image (Option B) which allows you to quickstart your inference journey.
+
+### Option A. Step by step process
+
+#### A.1. Launch Prefect + MLflow UI
+
+From within the main folder you should change to the code/ folder (first cd command in this example) and then run the rest.
+
+```bash
+cd code
+prefect server start
+mlflow ui --backend-store-uri sqlite:///mlflow.db
+```
+
+#### A.2. Run end-to-end pipeline
+
+This pipeline trains the model by doing hyperparameter search and then registers the top performing model. In order to make the model run faster in your machine, the hyperparameter search grid in the code from the repo is quite small. You can uncomment the more detailed grid if you want to, but it takes a while to run.
+
+Use the process flag if you want to process the data by yourself (generate the train, validation, test split).
+
+```bash
+python prefect_orchestrate_pipeline.py --process True
+```
+
+#### A.3. Serve latest model with Flask
+
+Be sure to be inside code/ when running this command. The Flask server runs on http://localhost:9696
+
+```bash
+python flask_predict.py
+```
+
+#### A.4. Test prediction
+
+Conduct a prediction on the JSON object inside of flask_test.py
+
+```bash
+python flask_test.py
+```
+
+Alternatively, you can use the prefect_test.py file to run a test on the sample test file located in ../data/sample_test_input.csv (the path is relative to the code/ folder)
+
+```bash
+python prefect_test.py
+```
+
+---
+
+### B. Dockerized Inference
+
+#### B.1 Build image
+
+Remember that you have to be inside the main folder (mlops-zoomcamp-project-25) in order to build the image:
+
+```bash
+docker build -t gradeclass-service .
+```
+
+#### B.2 Run container
+
+Run the following to run the container:
+
+```bash
+docker run -p 9696:9696 -v "$(pwd)/code:/app/code" -e MLFLOW_BACKEND_URI=sqlite:////app/code/mlflow.db -e MLFLOW_ARTIFACT_ROOT=file:///app/code/mlartifacts gradeclass-service
+```
+
+This launches:
+
+* REST API on [http://localhost:9696](http://localhost:9696)
+* MLflow UI inside the container on [http://localhost:5000](http://localhost:5000)
+
+Note that you can add -p 5000:5000 to the code above in case you want to have access to the MLFlow UI.
+
+#### B.3 Inference
+
+You can then open a new terminal and run the following in order to perform inference:
+
+```bash
+python code/flask_test.py
+```
+
+---
+
+## Tech Stack
+
+* **Model**: XGBoost
+* **Orchestration**: Prefect 3
+* **Experiment Tracking**: MLflow Tracking + Model Registry
+* **Serving**: Flask + Gunicorn
+* **Dev Tools**: Docker, Pipenv
+
