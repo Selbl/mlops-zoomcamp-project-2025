@@ -2,7 +2,7 @@ name: CI 🏗️
 
 on:
   push:
-    branches: [ main, feature/** ]
+    branches: [ main, features/**, feature/** ]
   pull_request:
 
 jobs:
