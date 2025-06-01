@@ -15,8 +15,14 @@ requests = "*"
 scikit-learn = "*"
 xgboost = "*"
 gunicorn = "*"
+black = "*"
+flake8 = "*"
+pre-commit = "*"
+pytest = "*"
+evidently = "*"
 
 [dev-packages]
+ipykernel = "*"
 
 [requires]
 python_version = "3.12"

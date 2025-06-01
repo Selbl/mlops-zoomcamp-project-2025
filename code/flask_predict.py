@@ -15,28 +15,34 @@ from flask import Flask, request, jsonify
 
 # ⬇️  re‑use the helper functions already written in prefect_test.py
 from prefect_test import (
-    one_hot_encoding,        # Prefect task ⇒ callable here
-    align_to_signature,      # utility to fit MLflow signature
-    get_model_uri            # resolves latest model version
+    one_hot_encoding,  # Prefect task ⇒ callable here
+    align_to_signature,  # utility to fit MLflow signature
+    get_model_uri,  # resolves latest model version
 )
 
 # ────────────────────────────────────────────────────────────────────────────
 # Configuration – edit if your MLflow host or model name differ
 # ────────────────────────────────────────────────────────────────────────────
 MLFLOW_TRACKING_URI = "http://127.0.0.1:5000"
-MODEL_NAME          = "gradeclass-xgb-classifier"
-MODEL_STAGE         = "Staging"            # fallback to Production/None handled
+MODEL_NAME = "gradeclass-xgb-classifier"
+MODEL_STAGE = "Staging"  # fallback to Production/None handled
 GRADE_MAP = {0: "A", 1: "B", 2: "C", 3: "D", 4: "F"}
 
 # connect to MLflow once, load the model once
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 model_uri = get_model_uri(MODEL_NAME, MODEL_STAGE)
-model     = mlflow.pyfunc.load_model(model_uri)
+model = mlflow.pyfunc.load_model(model_uri)
 
 # ────────────────────────────────────────────────────────────────────────────
 # Flask app
 # ────────────────────────────────────────────────────────────────────────────
 app = Flask("gradeclass-prediction")
+
+
+# Expose health endpoint
+@app.get("/health")
+def health():
+    return jsonify(status="ok"), 200
 
 
 @app.route("/predict", methods=["POST"])
