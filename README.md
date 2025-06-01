@@ -180,4 +180,5 @@ My code includes:
 - **Linter**: I use lint to format my code before committing
 - **Makefile**: For linting, testing and running the Docker image
 - **Pre-commit hooks**: Automatically checks for code formatting and potential errors before committing 
+- **CI**: I do the continuous integration part of CI/CD, but have not yet implemented CD
 
