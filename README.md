@@ -26,9 +26,9 @@ mlops-zoomcamp-project-25/
 ├── data/                       ← all data
 │   ├── students_performance.csv        ← original data source
 │   └── processed/, raw/                 # created dynamically
-
+│
 ├── tests/ 
-
+│
 ├── Dockerfile
 ├── Pipfile / Pipfile.lock
 └── .gitignore
@@ -182,5 +182,5 @@ My code includes:
 - **Linter**: I use lint to format my code before committing
 - **Makefile**: For linting, testing and running the Docker image
 - **Pre-commit hooks**: Automatically checks for code formatting and potential errors before committing 
-- **CI**: I do the continuous integration part of CI/CD, but have not yet implemented CD
+- **CI/CD**: I implement a CI/CD pipeline where every push and pull request to main triggers those events. The CI does some checks to ensure everything with the Docker image is in order and the CD deploys the image to [Dockerhub](https://hub.docker.com/repository/docker/selbl/gradeclass-service/general)
 
