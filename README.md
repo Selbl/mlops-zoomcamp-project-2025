@@ -26,7 +26,9 @@ mlops-zoomcamp-project-25/
 ├── data/                       ← all data
 │   ├── students_performance.csv        ← original data source
 │   └── processed/, raw/                 # created dynamically
-│
+
+├── tests/ 
+
 ├── Dockerfile
 ├── Pipfile / Pipfile.lock
 └── .gitignore

@@ -1,0 +1,69 @@
+name: CI 🏗️
+
+on:
+  push:
+    branches: [ main, feature/** ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # 1 — Make job fail fast if one step fails
+    fail-fast: true
+
+    steps:
+      # 2 — Checkout code
+      - uses: actions/checkout@v4
+
+      # 3 — Cache pip and pipenv virtual-env folders for speed
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.virtualenvs
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile.lock') }}
+
+      # 4 — Set-up Python
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 5 — Install project dependencies (same as Dockerfile)
+      - name: Install deps with pipenv
+        run: |
+          pip install --upgrade pip pipenv
+          pipenv install --system --deploy --ignore-pipfile
+
+      # 6 — Run pre-commit (Black, Flake8…)
+      - name: Lint & format 🔍
+        run: |
+          pre-commit run --all-files --show-diff-on-failure
+
+      # 7 — Run unit + integration tests
+      - name: Run pytest 🧪
+        run: |
+          pytest -m "not docker"  # fast tests first
+
+      # 8 — Build the Docker image (uses BuildKit cache)
+      - name: Build Docker image 🐳
+        run: |
+          docker build -t gradeclass-service:test .
+
+      # 9 — Run the slow Docker integration tests (needs image)
+      - name: Run Docker integration tests 🐳🧪
+        run: |
+          pytest -m docker
+
+      # 10 — (OPTIONAL) Push image on main
+      - name: Publish image to GHCR
+        if: github.ref == 'refs/heads/main'
+        env:
+          USER: ${{ github.repository_owner }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$TOKEN" | docker login ghcr.io -u "$USER" --password-stdin
+          IMAGE=ghcr.io/${{ github.repository }}:latest
+          docker tag gradeclass-service:test "$IMAGE"
+          docker push "$IMAGE"
+
