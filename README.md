@@ -4,7 +4,21 @@
 
 This project is an end-to-end ML workflow that predicts a student's final grade class (A–F) using demographic and academic performance data. It uses XGBoost as the classifier, and Prefect + MLflow for orchestration and experiment tracking. In addition, I use Evidently to track potential data drift.
 
----
+For ease of use, you can interact with the deployed Streamlit app on [Huggingface Spaces](https://huggingface.co/spaces/selbl/gradeclass-prediction). This is a minimalistic version of the app that provides a simple yet effective user interface to perform inference from the best performing model.
+
+## Note to Evaluators
+
+For ease of evaluation, I provide some comments here addressing all of the required criteria:
+
+- **Problem description**: Please see above. My project's objective is to estimate a student's predicted grade on a class given information of their academic performance, parental situation, ethnicity, etc... If I were to train this with a sufficiently large sample it could provide guidance to regulators on which activities/behaviours to focus more in order to increase the chances of students getting good grades (such as targetting those who are not enrolled in extracurriculars and encouraging them to do so, etc...)
+- **Cloud**: I have deployed my model to DockerHub (via the CD pipeline) as well as having a Streamlit app that runs my model
+- **Experiment Tracking and Model Registry**: I use both experiment tracking and model registry by using MLFlow. I only include the final experiment in this repo in order to prevent bloat. You can check the files prefect_train_xgb.py and prefect_register_model.py to check its implementation
+- **Workflow Orchestration**: I use Prefect to orchestrate my model. You can check prefect_orchestrate_pipeline.py for details
+- **Model Deployment**: My code is containerized in a Docker container and can be deployed to the cloud (you can try with an EC2 instance for example)
+- **Model Monitoring**: I use Evidently to track the metrics for data drift in order to ensure that the train and validation sets have similar distributions
+- **Reproducibility**: I try to be very detailed with my instructions, so hopefully this works!
+- **Best Practices**: I have included all of the suggested best practices. Please check the final section of this README for details
+
 
 ## Project Structure
 
@@ -46,7 +60,7 @@ I did mess up some of the configuration because I use the mlflow.db database fro
 * **Orchestration**: Prefect
 * **Monitoring**: Evidently
 * **Experiment Tracking**: MLflow Tracking + Model Registry
-* **Serving**: Flask + Gunicorn
+* **Serving**: Flask + Gunicorn, Streamlit (on Hugginface Spaces)
 * **Dev Tools**: Docker, Pipenv
 
 ---
@@ -59,8 +73,23 @@ I decided to go with a relatively simple and clean dataset in order to fully foc
 
 ---
 
+## Quickstart (Online)
+
+The simplest way to interact with the app is via the [Huggingface Spaces](https://huggingface.co/spaces/selbl/gradeclass-prediction) Streamlit deployed app. This provides a easy way to perform inference with a simple UI and without needing to install anything in your computer.
+
+Though very handy, the Huggingface spaces app does not provide much insights on all of the work behind the scenes I did for this project. Please check the local quickstart guide for a step by step approach to working with the model locally and to check the whole orchestration pipeline.
+
 ## Quickstart (Local)
 
+The instructions below show how to interact with the app locally in case you want to take a look at all of the orchestration and step by step approach. I suggest using Docker (Option B) to make your life easier, though you can also look at each of the separate components of the code as well.
+
+### Clone repo
+
+The first step is to clone the repo:
+
+```bash
+git clone "https://github.com/Selbl/mlops-zoomcamp-project-2025"
+```
 
 ### Install dependencies
 
