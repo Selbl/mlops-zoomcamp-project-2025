@@ -8,7 +8,7 @@ import pandas as pd
 
 # import numpy as np
 # import xgboost as xgb
-from distutils.util import strtobool
+# from distutils.util import strtobool
 
 from mlflow.tracking import MlflowClient
 
@@ -16,6 +16,14 @@ from mlflow.tracking import MlflowClient
 
 # add this at the very top with the other imports
 from mlflow.types.schema import DataType
+
+
+def strtobool(s):
+    if s in ["True", "true", "TRUE"]:
+        return True
+    elif s in ["False", "false", "FALSE"]:
+        return False
+    raise ValueError("Invalid string boolean value")
 
 
 # ------------------------------------------------------------------

@@ -1,11 +1,20 @@
 import argparse
-from distutils.util import strtobool
+
+# from distutils.util import strtobool
 import pandas as pd
 
 # import numpy as np
 # import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split
+
+
+def strtobool(s):
+    if s in ["True", "true", "TRUE"]:
+        return True
+    elif s in ["False", "false", "FALSE"]:
+        return False
+    raise ValueError("Invalid string boolean value")
 
 
 def parse_args():
