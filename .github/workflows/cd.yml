@@ -2,7 +2,7 @@ name: CD
 
 on:
   push:
-    branches: [main,features/**,feature/**]          # deploy only what reaches main
+    branches: [main]          # deploy only what reaches main
   pull_request:
     branches: [main]
   workflow_dispatch:            # allow manual “Run workflow”
