@@ -68,4 +68,3 @@ jobs:
           IMAGE=ghcr.io/${{ github.repository }}:latest
           docker tag gradeclass-service:test "$IMAGE"
           docker push "$IMAGE"
-
