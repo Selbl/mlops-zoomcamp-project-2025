@@ -171,7 +171,13 @@ python code/flask_test.py
 
 ---
 
-## Testing
+## Better Practices
 
-So far my code performs unit test on the data processing and the existence of the necessary data paths so that the code works well.
+My code includes:
+
+- **Unit tests**: Checks on the data processing functions as well as the existence of the necessary data for the code to run
+- **Integration tests**: Checking that the Docker image is healthy and connects to the desired endpoint
+- **Linter**: I use lint to format my code before committing
+- **Makefile**: For linting, testing and running the Docker image
+- **Pre-commit hooks**: Automatically checks for code formatting and potential errors before committing 
 

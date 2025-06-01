@@ -39,6 +39,12 @@ model = mlflow.pyfunc.load_model(model_uri)
 app = Flask("gradeclass-prediction")
 
 
+# Expose health endpoint
+@app.get("/health")
+def health():
+    return jsonify(status="ok"), 200
+
+
 @app.route("/predict", methods=["POST"])
 def predict_endpoint():
     """
