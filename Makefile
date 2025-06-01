@@ -9,6 +9,9 @@ lint:
 test:
 	pytest             
 
+itest:
+	pytest
+
 run:
 	python code/flask_predict.py
 
