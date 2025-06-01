@@ -4,13 +4,15 @@ on:
   push:
     branches: [ main, features/**, feature/** ]
   pull_request:
+    branches: [ main, features/**, feature/** ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     # 1 — Make job fail fast if one step fails
-    fail-fast: true
+    strategy:
+      fail-fast: true
 
     steps:
       # 2 — Checkout code
