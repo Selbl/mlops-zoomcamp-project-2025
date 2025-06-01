@@ -171,12 +171,7 @@ python code/flask_test.py
 
 ---
 
-## Tech Stack
+## Testing
 
-* **Model**: XGBoost
-* **Orchestration**: Prefect
-* **Monitoring**: Evidently
-* **Experiment Tracking**: MLflow Tracking + Model Registry
-* **Serving**: Flask + Gunicorn
-* **Dev Tools**: Docker, Pipenv
+So far my code performs unit test on the data processing and the existence of the necessary data paths so that the code works well.
 
